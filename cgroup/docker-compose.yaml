@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  app1:
+    build: ./app
+    container_name: flask_app1
+    mem_limit: 256m     # cgroup memory limit
+    cpus: 0.5           # 50% of one CPU core
+    networks:
+      - app_net
+
+  app2:
+    build: ./app
+    container_name: flask_app2
+    mem_limit: 128m     # 128 MB RAM limit
+    cpus: 0.25          # 25% of one CPU core
+    networks:
+      - app_net
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_lb
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app1
+      - app2
+    restart: always
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge
